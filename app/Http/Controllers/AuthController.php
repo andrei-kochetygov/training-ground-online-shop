@@ -118,7 +118,7 @@ class AuthController extends Controller
     }
 
     #[
-        Docs\Controllers\Methods\Get(
+        Docs\Http\Methods\Get(
             path: '/api/auth/user',
             summary: 'Allows to get currently authenticated user data',
             secured: true,
