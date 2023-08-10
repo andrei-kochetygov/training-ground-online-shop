@@ -1,21 +1,22 @@
 <?php 
 
-namespace App\Docs\Responses;
+namespace App\Docs\Http\Responses;
 
-use OpenApi\Attributes as OA;
+use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Response;
 
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
-class UnauthenticatedResponse extends OA\Response
+class Unauthenticated extends Response
 {
     public function __construct() {
         parent::__construct(
             response: 401,
             description: 'Unauthenticated',
-            content: new OA\JsonContent(
+            content: new JsonContent(
                 properties: [
-                    new OA\Property(
+                    new Property(
                         property: 'message',
-                        type: 'string',
                         example: 'Unauthenticated.',
                     ),
                 ],

@@ -1,17 +1,18 @@
 <?php 
 
-namespace App\Docs\Responses;
+namespace App\Docs\Http\Responses;
 
-use OpenApi\Attributes as OA;
+use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Response;
 
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
-class OkResponse extends OA\Response
+class Ok extends Response
 {
     public function __construct(...$examples) {
         $properties = collect($examples)->map(function ($example, $property) {
-            return new OA\Property(
+            return new Property(
                 property: $property,
-                type: gettype($example),
                 example: $example,
             );
         })->toArray();
@@ -19,7 +20,7 @@ class OkResponse extends OA\Response
         parent::__construct(
             response: 200,
             description: 'OK',
-            content: new OA\JsonContent(
+            content: new JsonContent(
                 properties: $properties,
             ),
         );

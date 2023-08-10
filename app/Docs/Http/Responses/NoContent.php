@@ -1,16 +1,16 @@
 <?php 
 
-namespace App\Docs\Responses;
+namespace App\Docs\Http\Responses;
 
-use OpenApi\Attributes as OA;
+use OpenApi\Attributes\Response;
 
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
-class NoContentResponse extends OA\Response
+class NoContent extends Response
 {
     public function __construct() {
         parent::__construct(
             response: 204,
-            description: 'No content',
+            description: 'No Content',
         );
     }
 }

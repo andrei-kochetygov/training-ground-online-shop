@@ -16,10 +16,9 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use Tymon\JWTAuth\JWTGuard;
-use OpenApi\Attributes as OA;
 use App\Docs;
 
-#[Docs\Controllers\Tags(['Authentication'])]
+#[Docs\FeatureTag('Authentication')]
 class AuthController extends Controller
 {
      /** @var JWTGuard */
@@ -34,20 +33,22 @@ class AuthController extends Controller
         $this->user = $this->guard->user();
     }
 
-    #[Docs\Controllers\Methods\Post(
-        path: '/api/auth/register',
-        summary: 'Allows to register new user',
-    )]
-    #[Docs\Responses\OkResponse(
-        access_token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3Q6ODAwMFwvYXBpXC9hdXRoXC9yZWdpc3RlciIsImlhdCI6MTY5MTUwMDc3OCwiZXhwIjoxNjkxNTAxMDc4LCJuYmYiOjE2OTE1MDA3NzgsImp0aSI6ImZZWml6SlN6M3ozVW9RZjUiLCJzdWIiOjEsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.2ssS5y6CGWNSgZWO5DtYTiU2v4YK-UXV7TyC_kXdknc',
-        token_type: 'Bearer',
-        expires_in: 5 * 60,
-    )]
-    #[Docs\JsonBody(
-        email: 'user@example.com',
-        password: 'password123',
-        password_confirmation: 'password123',
-    )]
+    #[
+        Docs\Http\Methods\Post(
+            path: '/api/auth/register',
+            summary: 'Allows to register new user',
+        ),
+        Docs\Http\Requests\Json(
+            email: 'user@example.com',
+            password: 'password123',
+            password_confirmation: 'password123',
+        ),
+        Docs\Http\Responses\JsonWebToken,
+        Docs\Http\Responses\UnprocessableEntity(
+            email: ['The email field is required.'],
+            password: ['The password field is required.'],
+        ),
+    ]
     public function register(RegisterRequest $request)
     {
         $user = User::forceCreate([
@@ -62,19 +63,21 @@ class AuthController extends Controller
         return $this->respondWithToken($token);
     }
 
-    #[Docs\Controllers\Methods\Post(
-        path: '/api/auth/login',
-        summary: 'Allows user to login with email and password',
-    )]
-    #[Docs\Responses\OkResponse(
-        access_token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3Q6ODAwMFwvYXBpXC9hdXRoXC9yZWdpc3RlciIsImlhdCI6MTY5MTUwMDc3OCwiZXhwIjoxNjkxNTAxMDc4LCJuYmYiOjE2OTE1MDA3NzgsImp0aSI6ImZZWml6SlN6M3ozVW9RZjUiLCJzdWIiOjEsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.2ssS5y6CGWNSgZWO5DtYTiU2v4YK-UXV7TyC_kXdknc',
-        token_type: 'Bearer',
-        expires_in: 5 * 60,
-    )]
-    #[Docs\JsonBody(
-        email: 'user@example.com',
-        password: 'password123',
-    )]
+    #[
+        Docs\Http\Methods\Post(
+            path: '/api/auth/login',
+            summary: 'Allows user to login with email and password',
+        ),
+        Docs\Http\Requests\Json(
+            email: 'user@example.com',
+            password: 'password123',
+        ),
+        Docs\Http\Responses\JsonWebToken,
+        Docs\Http\Responses\UnprocessableEntity(
+            email: ['The email field is required.'],
+            password: ['The password field is required.'],
+        ),
+    ]
     public function login(LoginRequest $request)
     {
         $request->authenticate();
@@ -84,13 +87,15 @@ class AuthController extends Controller
         return $this->respondWithToken($token);
     }
     
-    #[Docs\SecuritySchemas(['jwt'])]
-    #[Docs\Controllers\Methods\Post(
-        path: '/api/auth/logout',
-        summary: 'Allows user to login with email and password',
-    )]
-    #[Docs\Responses\NoContentResponse()]
-    #[Docs\Responses\UnauthenticatedResponse()]
+    #[
+        Docs\Http\Methods\Post(
+            path: '/api/auth/logout',
+            summary: 'Allows user to login with email and password',
+            secured: true,
+        ),
+        Docs\Http\Responses\NoContent,
+        Docs\Http\Responses\Unauthenticated,
+    ]
     public function logout()
     {
         $this->guard->logout();
@@ -98,36 +103,36 @@ class AuthController extends Controller
         return response()->noContent();
     }
 
-    #[Docs\SecuritySchemas(['jwt'])]
-    #[Docs\Controllers\Methods\Post(
-        path: '/api/auth/refresh',
-        summary: 'Allows to refresh expired JWT access token',
-    )]
-    #[Docs\Responses\OkResponse(
-        access_token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3Q6ODAwMFwvYXBpXC9hdXRoXC9yZWdpc3RlciIsImlhdCI6MTY5MTUwMDc3OCwiZXhwIjoxNjkxNTAxMDc4LCJuYmYiOjE2OTE1MDA3NzgsImp0aSI6ImZZWml6SlN6M3ozVW9RZjUiLCJzdWIiOjEsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.2ssS5y6CGWNSgZWO5DtYTiU2v4YK-UXV7TyC_kXdknc',
-        token_type: 'Bearer',
-        expires_in: 5 * 60,
-    )]
-    #[Docs\Responses\UnauthenticatedResponse()]
+    #[
+        Docs\Http\Methods\Post(
+            path: '/api/auth/refresh',
+            summary: 'Allows to refresh expired JWT access token',
+            secured: true,
+        ),
+        Docs\Http\Responses\JsonWebToken,
+        Docs\Http\Responses\Unauthenticated,
+    ]
     public function refresh()
     {
         return $this->respondWithToken($this->guard->refresh());
     }
 
-    #[Docs\SecuritySchemas(['jwt'])]
-    #[Docs\Controllers\Methods\Get(
-        path: '/api/auth/user',
-        summary: 'Allows to get currently authenticated user data',
-    )]
-    #[Docs\Responses\OkResponse(
-        id: 1,
-        email: 'user@example.com',
-        email_verified_at: null,
-        created_at: null,
-        updated_at: null,
-        deleted_at: null,
-    )]
-    #[Docs\Responses\UnauthenticatedResponse()]
+    #[
+        Docs\Controllers\Methods\Get(
+            path: '/api/auth/user',
+            summary: 'Allows to get currently authenticated user data',
+            secured: true,
+        ),
+        Docs\Http\Responses\Ok(
+            id: 1,
+            email: 'user@example.com',
+            email_verified_at: null,
+            created_at: null,
+            updated_at: null,
+            deleted_at: null,
+        ),
+        Docs\Http\Responses\Unauthenticated,
+    ]
     public function getAuthenticatedUser()
     {
         return response()->json($this->user);
@@ -142,38 +147,21 @@ class AuthController extends Controller
         return response()->noContent();
     }
 
-    #[Docs\Controllers\Methods\Post(
-        path: '/api/auth/request-password-reset-link',
-        summary: 'Allows guest to request password reset link if he forgot his password',
-        responses: [
-            new OA\Response(
-                response: 422,
-                description: 'Returns form validation errors',
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(
-                            property: 'message',
-                            type: 'string',
-                            example: 'The given data was invalid.',
-                        ),
-                        new OA\Property(
-                            property: 'errors',
-                            type: 'string',
-                            example: [
-                                'email' => ['The email field is required.'],
-                            ],
-                        ),
-                    ],
-                ),
-            ),
-        ],
-    )]
-    #[Docs\Responses\OkResponse(
-        message: 'We have emailed your password reset link!',
-    )]
-    #[Docs\JsonBody(
-        email: 'user@example.com',
-    )]
+    #[
+        Docs\Http\Methods\Post(
+            path: '/api/auth/request-password-reset-link',
+            summary: 'Allows guest to request password reset link if he forgot his password',
+        ),
+        Docs\Http\Requests\Json(
+            email: 'user@example.com',
+        ),
+        Docs\Http\Responses\Ok(
+            message: 'We have emailed your password reset link!',
+        ),
+        Docs\Http\Responses\UnprocessableEntity(
+            email: ['The email field is required.'],
+        ),
+    ]
     public function requestPasswordResetLink(PasswordResetLinkRequest $request)
     {
         $status = Password::sendResetLink(
@@ -190,41 +178,26 @@ class AuthController extends Controller
 
     }
 
-    #[Docs\Controllers\Methods\Patch(
-        path: '/api/auth/reset-password',
-        summary: 'Allows guest to reset forgotten password with new one',
-        responses: [
-            new OA\Response(
-                response: 422,
-                description: 'Returns form validation errors',
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(
-                            property: 'message',
-                            type: 'string',
-                            example: 'The given data was invalid.',
-                        ),
-                        new OA\Property(
-                            property: 'errors',
-                            type: 'string',
-                            example: [
-                                'email' => ['The email field is required.'],
-                            ],
-                        ),
-                    ],
-                ),
-            ),
-        ],
-    )]
-    #[Docs\Responses\OkResponse(
-        message: 'Password was successfully reset',
-    )]
-    #[Docs\JsonBody(
-        token: 'iImCGLxZKiLccMteIhcA76RYaI5fxHvC',
-        email: 'user@example.com',
-        password: 'password123',
-        password_confirmation: 'password123',
-    )]
+    #[
+        Docs\Http\Methods\Patch(
+            path: '/api/auth/reset-password',
+            summary: 'Allows guest to reset forgotten password with new one',
+        ),
+        Docs\Http\Requests\Json(
+            token: 'iImCGLxZKiLccMteIhcA76RYaI5fxHvC',
+            email: 'user@example.com',
+            password: 'password123',
+            password_confirmation: 'password123',
+        ),
+        Docs\Http\Responses\Ok(
+            message: 'Password was successfully reset',
+        ),
+        Docs\Http\Responses\UnprocessableEntity(
+            token: ['Token is invalid.'],
+            email: ['The email field is required.'],
+            password: ['Password is required.'],
+        ),
+    ]
     public function resetPassword(PasswordResetRequest $request)
     {
         $status = Password::reset(
@@ -250,21 +223,18 @@ class AuthController extends Controller
         return response()->json(['message' => __($status)]);
     }
     
-    #[Docs\SecuritySchemas(['jwt'])]
-    #[Docs\Controllers\Methods\Post(
-        path: '/api/auth/request-email-verification-link',
-        summary: 'Allows authenticated user to repeat request for the email verification link',
-        responses: [
-            new OA\Response(
-                response: 302,
-                description: 'Redirects user to home page if email is already verified',
-            ),
-        ],
-    )]
-    #[Docs\Responses\OkResponse(
-        message: 'Verification link will be sent soon',
-    )]
-    #[Docs\Responses\UnauthenticatedResponse()]
+    #[
+        Docs\Http\Methods\Post(
+            path: '/api/auth/request-email-verification-link',
+            summary: 'Allows authenticated user to repeat request for the email verification link',
+            secured: true,
+        ),
+        Docs\Http\Responses\Ok(
+            message: 'Verification link will be sent soon',
+        ),
+        Docs\Http\Responses\Found(RouteServiceProvider::HOME),
+        Docs\Http\Responses\Unauthenticated,
+    ]
     public function sendEmailVerificationLink()
     {
         if ($this->user->hasVerifiedEmail()) {
@@ -276,25 +246,21 @@ class AuthController extends Controller
         return response()->json(['message' => 'Verification link will be sent soon']);
     }
 
-    #[Docs\SecuritySchemas(['jwt'])]
-    #[Docs\Controllers\Methods\Patch(
-        path: '/api/auth/verify-email',
-        summary: 'Allows to verify email with the link which was sent to the user email',
-        responses: [
-            new OA\Response(
-                response: 422,
-                description: 'Returns validation errors', // TODO: Add example
-            ),
-        ],
-    )]
-    #[Docs\JsonBody(
-        expires: '1690963346',
-        hash: '6c08e383e701eee281be1453d3c9a8471fb712ab',
-        id: '1',
-        signature: 'f0ecf0ee45239b48e802c51d592dd22e126d3c5fa571f713f320262ca98bdf98',
-    )]
-    #[Docs\Responses\NoContentResponse()]
-    #[Docs\Responses\UnauthenticatedResponse()]
+    #[
+        Docs\Http\Methods\Patch(
+            path: '/api/auth/verify-email',
+            summary: 'Allows to verify email with the link which was sent to the user email',
+            secured: true,
+        ),
+        Docs\Http\Requests\Json(
+            expires: '1690963346',
+            hash: '6c08e383e701eee281be1453d3c9a8471fb712ab',
+            id: '1',
+            signature: 'f0ecf0ee45239b48e802c51d592dd22e126d3c5fa571f713f320262ca98bdf98',
+        ),
+        Docs\Http\Responses\NoContent,
+        Docs\Http\Responses\Unauthenticated,
+    ]
     public function verifyEmail(EmailVerificationRequest $request)
     {
         $request->fulfill();
