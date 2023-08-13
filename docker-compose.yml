@@ -1,33 +1,38 @@
 version: '3'
+
 services:
-    app:
-        build:
-            context: ./docker/php
-            dockerfile: Dockerfile
-        command: php artisan serve --host=${APP_HOST:-0.0.0.0} --port=8000
+    api:
+        image: numberninecms/php:8.1-fpm-dev
+        command: >
+            bash -c "
+                [ ! -d "vendor" ] &&
+                composer install-without-timeout ||
+                php artisan serve --host=${APP_HOST:-0.0.0.0} --port=8000
+            "
         ports:
-            - '${APP_PORT:-8000}:8000'
+            - ${APP_PORT:-8000}:8000
         volumes:
-            - '.:/var/www/html'
+            - .:/var/www/html
+        working_dir: /var/www/html
         networks:
-            - app
+            - api
         depends_on:
             - mysql
             - mailpit
     phpmyadmin:
         image: phpmyadmin
         ports:
-            - '${PHPMYADMIN_PORT:-8080}:80'
+            - ${FORWARD_PHPMYADMIN_PORT:-8080}:80
         environment:
             - PMA_ARBITRARY=1
         networks:
-            - app
+            - api
         depends_on:
             - mysql
     mysql:
-        image: 'mysql:5.6'
+        image: mysql:5.6
         ports:
-            - '${FORWARD_DB_PORT:-3306}:3306'
+            - ${FORWARD_DB_PORT:-3306}:3306
         environment:
             MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
             MYSQL_ROOT_HOST: '%'
@@ -36,27 +41,27 @@ services:
             MYSQL_PASSWORD: '${DB_PASSWORD}'
             MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
         volumes:
-            - 'database:/var/lib/mysql'
+            - database:/var/lib/mysql
         networks:
-            - app
+            - api
         healthcheck:
             test:
                 - CMD
                 - mysqladmin
                 - ping
-                - '-p${DB_PASSWORD}'
+                - -p${DB_PASSWORD}
             retries: 3
             timeout: 5s
     mailpit:
-        image: 'axllent/mailpit'
+        image: axllent/mailpit
         ports:
-            - '${FORWARD_MAIL_UI_PORT:-8025}:8025'
-            - '${FORWARD_MAIL_UI_PORT:-1025}:1025'
+            - ${FORWARD_MAIL_UI_PORT:-8025}:8025
+            - ${FORWARD_MAIL_PORT:-1025}:1025
         networks:
-            - app
+            - api
 
 networks:
-    app:
+    api:
         driver: bridge
 
 volumes:

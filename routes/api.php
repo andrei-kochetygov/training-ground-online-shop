@@ -5,7 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\Management\UserController as UserManagementController;
+// use App\Http\Controllers\Management\UserController as UserManagementController;
 use App\Http\Controllers\Management\CategoryController as CategoryManagementController;
 use App\Http\Controllers\Management\ProductController as ProductManagementController;
 use App\Http\Controllers\Management\OrderController as OrderManagementController;
