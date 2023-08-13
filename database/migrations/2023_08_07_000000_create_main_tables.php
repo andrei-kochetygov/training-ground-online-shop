@@ -1,7 +1,12 @@
 <?php
 
+use App\Enums\Category\CategoryAttributeName;
+use App\Enums\Order\OrderAttributeName;
+use App\Enums\Order\OrderProductAttributeName;
+use App\Enums\Product\ProductAttributeName;
 use Database\TableName;
 use App\Enums\User\UserAttributeName;
+use App\Enums\User\UserRole;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -66,8 +71,9 @@ class CreateMainTables extends Migration
         Schema::create(TableName::USERS, function (Blueprint $table) {
             $table->id(UserAttributeName::ID);
             $table->string(UserAttributeName::EMAIL)->unique();
-            $table->timestamp(UserAttributeName::EMAIL_VERIFIED_AT)->nullable();
+            // $table->timestamp(UserAttributeName::EMAIL_VERIFIED_AT)->nullable();
             $table->string(UserAttributeName::PASSWORD)->nullable();
+            $table->string(UserAttributeName::ROLE)->default(UserRole::CUSTOMER);
             $table->timestamps();
             $table->softDeletes();
         });
@@ -76,6 +82,41 @@ class CreateMainTables extends Migration
             $table->string('email')->index();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
+        });
+
+        Schema::create(TableName::CATEGORIES, function (Blueprint $table) {
+            $table->id(CategoryAttributeName::ID);
+            $table->string(CategoryAttributeName::NAME);
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create(TableName::PRODUCTS, function (Blueprint $table) {
+            $table->id(ProductAttributeName::ID);
+            $table->unsignedBigInteger(ProductAttributeName::CATEGORY_ID)->nullable();
+            $table->string(ProductAttributeName::NAME);
+            $table->text(ProductAttributeName::DESCRIPTION)->nullable();
+            $table->unsignedDecimal(ProductAttributeName::PRICE);
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create(TableName::ORDERS, function (Blueprint $table) {
+            $table->id(OrderAttributeName::ID);
+            $table->unsignedBigInteger(OrderAttributeName::USER_ID)->nullable();
+            $table->unsignedDecimal(OrderAttributeName::TOTAL_PRICE)->default(0);
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create(TableName::ORDERS_PRODUCTS, function (Blueprint $table) {
+            $table->id(OrderProductAttributeName::ID);
+            $table->unsignedBigInteger(OrderProductAttributeName::ORDER_ID);
+            $table->unsignedBigInteger(OrderProductAttributeName::PRODUCT_ID);
+            $table->unsignedInteger(OrderProductAttributeName::QUANTITY);
+            $table->unsignedDecimal(OrderProductAttributeName::PRICE);
+            $table->timestamps();
+            $table->softDeletes();
         });
     }
 
@@ -86,6 +127,10 @@ class CreateMainTables extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists(TableName::ORDERS_PRODUCTS);
+        Schema::dropIfExists(TableName::ORDERS);
+        Schema::dropIfExists(TableName::PRODUCTS);
+        Schema::dropIfExists(TableName::CATEGORIES);
         Schema::dropIfExists(TableName::PASSWORD_RESETS);
         Schema::dropIfExists(TableName::USERS);
         Schema::dropIfExists(TableName::MEDIA);

@@ -2,7 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Validation\ValidationException;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Facades\Password;
+
+use Tymon\JWTAuth\JWTGuard;
+
+use App\Docs;
+use App\Models\User;
 use App\Enums\User\UserAttributeName;
+use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\EmailVerificationRequest;
 use App\Http\Requests\Auth\LoginRequest;
@@ -10,13 +19,6 @@ use App\Http\Requests\Auth\PasswordResetLinkRequest;
 use App\Http\Requests\Auth\PasswordResetRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\UpdateAuthenticatedUserRequest;
-use App\Models\User;
-use App\Providers\RouteServiceProvider;
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Validation\ValidationException;
-use Tymon\JWTAuth\JWTGuard;
-use App\Docs;
 
 #[Docs\FeatureTag('Authentication')]
 class AuthController extends Controller
@@ -33,22 +35,22 @@ class AuthController extends Controller
         $this->user = $this->guard->user();
     }
 
-    #[
-        Docs\Http\Methods\Post(
-            path: '/api/auth/register',
-            summary: 'Allows to register new user',
-        ),
-        Docs\Http\Requests\Json(
-            email: 'user@example.com',
-            password: 'password123',
-            password_confirmation: 'password123',
-        ),
-        Docs\Http\Responses\JsonWebToken,
-        Docs\Http\Responses\UnprocessableEntity(
-            email: ['The email field is required.'],
-            password: ['The password field is required.'],
-        ),
-    ]
+    // #[
+    //     Docs\Http\Methods\Post(
+    //         path: '/api/auth/register',
+    //         summary: 'Allows to register new user',
+    //     ),
+    //     Docs\Http\Requests\Json(
+    //         email: 'user@example.com',
+    //         password: 'password123',
+    //         password_confirmation: 'password123',
+    //     ),
+    //     Docs\Http\Responses\JsonWebToken,
+    //     Docs\Http\Responses\UnprocessableEntity(
+    //         email: ['The email field is required.'],
+    //         password: ['The password field is required.'],
+    //     ),
+    // ]
     public function register(RegisterRequest $request)
     {
         $user = User::forceCreate([
@@ -126,7 +128,6 @@ class AuthController extends Controller
         Docs\Http\Responses\Ok(
             id: 1,
             email: 'user@example.com',
-            email_verified_at: null,
             created_at: null,
             updated_at: null,
             deleted_at: null,
@@ -223,18 +224,18 @@ class AuthController extends Controller
         return response()->json(['message' => __($status)]);
     }
     
-    #[
-        Docs\Http\Methods\Post(
-            path: '/api/auth/request-email-verification-link',
-            summary: 'Allows authenticated user to repeat request for the email verification link',
-            secured: true,
-        ),
-        Docs\Http\Responses\Ok(
-            message: 'Verification link will be sent soon',
-        ),
-        Docs\Http\Responses\Found(RouteServiceProvider::HOME),
-        Docs\Http\Responses\Unauthenticated,
-    ]
+    // #[
+    //     Docs\Http\Methods\Post(
+    //         path: '/api/auth/request-email-verification-link',
+    //         summary: 'Allows authenticated user to repeat request for the email verification link',
+    //         secured: true,
+    //     ),
+    //     Docs\Http\Responses\Ok(
+    //         message: 'Verification link will be sent soon',
+    //     ),
+    //     Docs\Http\Responses\Found(RouteServiceProvider::HOME),
+    //     Docs\Http\Responses\Unauthenticated,
+    // ]
     public function sendEmailVerificationLink()
     {
         if ($this->user->hasVerifiedEmail()) {
@@ -246,21 +247,21 @@ class AuthController extends Controller
         return response()->json(['message' => 'Verification link will be sent soon']);
     }
 
-    #[
-        Docs\Http\Methods\Patch(
-            path: '/api/auth/verify-email',
-            summary: 'Allows to verify email with the link which was sent to the user email',
-            secured: true,
-        ),
-        Docs\Http\Requests\Json(
-            expires: '1690963346',
-            hash: '6c08e383e701eee281be1453d3c9a8471fb712ab',
-            id: '1',
-            signature: 'f0ecf0ee45239b48e802c51d592dd22e126d3c5fa571f713f320262ca98bdf98',
-        ),
-        Docs\Http\Responses\NoContent,
-        Docs\Http\Responses\Unauthenticated,
-    ]
+    // #[
+    //     Docs\Http\Methods\Patch(
+    //         path: '/api/auth/verify-email',
+    //         summary: 'Allows to verify email with the link which was sent to the user email',
+    //         secured: true,
+    //     ),
+    //     Docs\Http\Requests\Json(
+    //         expires: '1690963346',
+    //         hash: '6c08e383e701eee281be1453d3c9a8471fb712ab',
+    //         id: '1',
+    //         signature: 'f0ecf0ee45239b48e802c51d592dd22e126d3c5fa571f713f320262ca98bdf98',
+    //     ),
+    //     Docs\Http\Responses\NoContent,
+    //     Docs\Http\Responses\Unauthenticated,
+    // ]
     public function verifyEmail(EmailVerificationRequest $request)
     {
         $request->fulfill();

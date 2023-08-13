@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Order\OrderAttributeName;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -15,7 +16,7 @@ use App\Enums\User\UserAttributeName;
 use App\Notifications\EmailVerificationNotification;
 use App\Notifications\PasswordResetNotification;
 
-class User extends Authenticatable implements JWTSubject, MustVerifyEmail
+class User extends Authenticatable implements JWTSubject // , MustVerifyEmail
 {
     use HasFactory, Notifiable, SoftDeletes;
 
@@ -29,9 +30,9 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         UserAttributeName::PASSWORD,
     ];
 
-    public static function getValidationRulesForFillableAttributes()
+    public function orders()
     {
-        return static::getValidationRules()->only((new static)->getFillable());
+        return $this->hasMany(Order::class, OrderAttributeName::USER_ID, (new Order)->getPrimaryKey());
     }
 
     public function getJWTIdentifier()
@@ -42,6 +43,13 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    public function hasSomeRole($roles)
+    {
+        return collect($roles)->reduce(function ($hasRole, $role) {
+            return $hasRole || $this->role === $role;
+        }, false);
     }
 
     public function sendPasswordResetNotification($token)
