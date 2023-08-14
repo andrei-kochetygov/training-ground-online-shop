@@ -1,6 +1,6 @@
 # Preparation
 
-Download and install #[Docker Desktop](https://www.docker.com/products/docker-desktop/).
+Download and install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 
 # Services
 
