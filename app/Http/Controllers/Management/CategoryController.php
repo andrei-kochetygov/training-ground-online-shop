@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Management\CategoryStoreRequest;
 use App\Http\Requests\Management\CategoryUpdateRequest;
+use Illuminate\Http\Request;
 
 #[Docs\FeatureTag('Categories (Management)')]
 class CategoryController extends Controller
@@ -186,10 +187,8 @@ class CategoryController extends Controller
             ],
         ),
     ]
-    public function showProducts(Category $category)
+    public function showProducts(Request $request, Category $category)
     {
-        return response()->make([
-            'items' => $category->products,
-        ]);
+        return $category->products()->simpleJsonPaginate($request->get('per_page') ?? 20);
     }
 }

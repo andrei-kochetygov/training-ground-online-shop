@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Docs;
 use App\Models\Category;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 
 #[Docs\FeatureTag('Categories')]
 class CategoryController extends Controller
@@ -29,6 +30,16 @@ class CategoryController extends Controller
             in: 'path',
             required: true,
             example: 1,
+        ),
+        Docs\Http\Requests\Parameter(
+            name: 'page',
+            in: 'query',
+            example: 1,
+        ),
+        Docs\Http\Requests\Parameter(
+            name: 'per_page',
+            in: 'query',
+            example: 20,
         ),
         Docs\Http\Responses\Ok(
             items: [
@@ -55,10 +66,8 @@ class CategoryController extends Controller
             ],
         ),
     ]
-    public function showProducts(Category $category)
+    public function showProducts(Request $request, Category $category)
     {
-        return response()->make([
-            'items' => $category->products,
-        ]);
+        return $category->products()->simpleJsonPaginate($request->get('per_page') ?? 20);
     }
 }

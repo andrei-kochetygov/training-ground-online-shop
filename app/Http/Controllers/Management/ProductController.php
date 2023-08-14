@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Management\ProductStoreRequest;
 use App\Http\Requests\Management\ProductUpdateRequest;
+use Illuminate\Http\Request;
 
 #[Docs\FeatureTag('Products (Management)')]
 class ProductController extends Controller
@@ -15,6 +16,16 @@ class ProductController extends Controller
         Docs\Http\Methods\Get(
             path: '/api/manage/products',
             secured: true,
+        ),
+        Docs\Http\Requests\Parameter(
+            name: 'page',
+            in: 'query',
+            example: 1,
+        ),
+        Docs\Http\Requests\Parameter(
+            name: 'per_page',
+            in: 'query',
+            example: 20,
         ),
         Docs\Http\Responses\Ok(
             pagination: [
@@ -53,9 +64,9 @@ class ProductController extends Controller
             ],
         ),
     ]
-    public function index()
+    public function index(Request $request)
     {
-        return Product::simpleJsonPaginate(20);
+        return Product::simpleJsonPaginate($request->get('per_page') ?? 20);
     }
 
     #[

@@ -6,6 +6,7 @@ use App\Docs;
 use App\Models\Order;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Management\OrderUpdateRequest;
+use Illuminate\Http\Request;
 
 #[Docs\FeatureTag('Orders (Management)')]
 class OrderController extends Controller
@@ -14,6 +15,16 @@ class OrderController extends Controller
         Docs\Http\Methods\Get(
             path: '/api/manage/orders',
             secured: true,
+        ),
+        Docs\Http\Requests\Parameter(
+            name: 'page',
+            in: 'query',
+            example: 1,
+        ),
+        Docs\Http\Requests\Parameter(
+            name: 'per_page',
+            in: 'query',
+            example: 20,
         ),
         Docs\Http\Responses\Ok(
             pagination: [
@@ -48,9 +59,9 @@ class OrderController extends Controller
             ],
         ),
     ]
-    public function index()
+    public function index(Request $request)
     {
-        return Order::simpleJsonPaginate(20);
+        return Order::simpleJsonPaginate($request->get('per_page') ?? 20);
     }
 
     #[
@@ -89,6 +100,16 @@ class OrderController extends Controller
             required: true,
             example: 1,
         ),
+        Docs\Http\Requests\Parameter(
+            name: 'page',
+            in: 'query',
+            example: 1,
+        ),
+        Docs\Http\Requests\Parameter(
+            name: 'per_page',
+            in: 'query',
+            example: 20,
+        ),
         Docs\Http\Responses\Ok(
             items: [
                 [
@@ -126,10 +147,8 @@ class OrderController extends Controller
             ],
         ),
     ]
-    public function showProducts(Order $order)
+    public function showProducts(Request $request, Order $order)
     {
-        return response()->make([
-            'items' => $order->products,
-        ]);
+        return $order->products()->simpleJsonPaginate($request->get('per_page') ?? 20);
     }
 }

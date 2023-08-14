@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Docs;
 use App\Models\Product;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 
 #[Docs\FeatureTag('Products')]
 class ProductController extends Controller
@@ -12,6 +13,16 @@ class ProductController extends Controller
     #[
         Docs\Http\Methods\Get(
             path: '/api/products',
+        ),
+        Docs\Http\Requests\Parameter(
+            name: 'page',
+            in: 'query',
+            example: 1,
+        ),
+        Docs\Http\Requests\Parameter(
+            name: 'per_page',
+            in: 'query',
+            example: 20,
         ),
         Docs\Http\Responses\Ok(
             pagination: [
@@ -50,9 +61,9 @@ class ProductController extends Controller
             ],
         ),
     ]
-    public function index()
+    public function index(Request $request)
     {
-        return Product::simpleJsonPaginate(20);
+        return Product::simpleJsonPaginate($request->get('per_page') ?? 20);
     }
 
     #[
