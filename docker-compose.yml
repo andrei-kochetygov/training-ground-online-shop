@@ -6,7 +6,8 @@ services:
         command: >
             bash -c "
                 [ ! -d "vendor" ] &&
-                composer install-without-timeout ||
+                composer install-without-timeout &&
+                false ||
                 php artisan serve --host=${APP_HOST:-0.0.0.0} --port=8000
             "
         ports:
