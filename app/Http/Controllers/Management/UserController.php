@@ -20,7 +20,7 @@ class UserController extends Controller
     // ]
     public function index()
     {
-        return User::paginate(20);
+        return User::simpleJsonPaginate(20);
     }
 
     // #[
@@ -116,6 +116,8 @@ class UserController extends Controller
     // ]
     public function showOrders(User $user)
     {
-        return $user->orders;
+        return  response()->make([
+            'items' => $user->orders,
+        ]);;
     }
 }

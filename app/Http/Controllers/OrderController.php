@@ -25,7 +25,7 @@ class OrderController extends Controller
                 ],
             ],
         ),
-        Docs\Http\Responses\Ok,
+        Docs\Http\Responses\NoContent(),
     ]
     public function store(OrderStoreRequest $request)
     {
@@ -50,6 +50,6 @@ class OrderController extends Controller
 
         $order->save();
 
-        return $order;
+        return response()->noContent();
     }
 }

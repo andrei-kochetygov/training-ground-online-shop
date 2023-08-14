@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 use Database\TableName;
 use App\Enums\Product\ProductAttributeName;
+use App\Models\Traits\SimpleJsonPaginateTrait;
 
 class Product extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, SimpleJsonPaginateTrait;
 
     protected $table = TableName::PRODUCTS;
 

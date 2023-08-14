@@ -13,12 +13,13 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 use Database\TableName;
 use App\Enums\User\UserAttributeName;
+use App\Models\Traits\SimpleJsonPaginateTrait;
 use App\Notifications\EmailVerificationNotification;
 use App\Notifications\PasswordResetNotification;
 
 class User extends Authenticatable implements JWTSubject // , MustVerifyEmail
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, SimpleJsonPaginateTrait;
 
     protected $table = TableName::USERS;
 

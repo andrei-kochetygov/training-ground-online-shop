@@ -13,6 +13,7 @@ class Ok extends Response
         $properties = collect($examples)->map(function ($example, $property) {
             return new Property(
                 property: $property,
+                type: \gettype($example) === 'string' ? 'string' : null,
                 example: $example,
             );
         })->toArray();
